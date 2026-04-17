@@ -1,0 +1,27 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: producto-service
+          uri: http://producto-service:8081
+          predicates:
+            - Path=/inventario/productos/**, /inventario/categorias/**
+
+        - id: movimiento-service
+          uri: http://movimiento-service:8082
+          predicates:
+            - Path=/inventario/movimientos/**
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+
+          jwk-set-uri: http://keycloak-inventario:8080/realms/inventario-realm/protocol/openid-connect/certs
+
+          issuer-uri: http://localhost:8080/realms/inventario-realm

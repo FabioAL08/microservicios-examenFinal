@@ -1,0 +1,22 @@
+server:
+  port: 8085
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: instituto-service
+          uri: http://instituto-service:8081
+          predicates:
+            - Path=/instituto/**
+
+        - id: matricula-service
+          uri: http://matricula-service:8082
+          predicates:
+            - Path=/matricula/**
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://keycloak:8080/realms/instituto-realm/protocol/openid-connect/certs

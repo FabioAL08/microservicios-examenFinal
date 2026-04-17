@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+
+  # 📦 Microservicio de Productos
+  producto-service:
+    build: ./producto-service
+    container_name: producto-service
+    ports:
+      - "8081:8081"
+    networks:
+      - inventario-network
+
+  # 📦 Microservicio de Movimientos
+  movimiento-service:
+    build: ./movimiento-service
+    container_name: movimiento-service
+    ports:
+      - "8082:8082"
+    networks:
+      - inventario-network
+
+  # 🚪 API Gateway (ÚNICO PUNTO DE ENTRADA)
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8085:8085"
+    depends_on:
+      - producto-service
+      - movimiento-service
+      - keycloak-inventario
+    networks:
+      - inventario-network
+
+  # 🔐 Keycloak
+  keycloak-inventario:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak-inventario
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8080:8080"
+    networks:
+      - inventario-network
+
+networks:
+  inventario-network:
+    driver: bridge

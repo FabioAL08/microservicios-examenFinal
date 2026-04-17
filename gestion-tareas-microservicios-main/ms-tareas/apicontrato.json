@@ -1,0 +1,569 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API de Microservicio de Tareas",
+    "description": "## Microservicio de Tareas para Sistema de Gestión de Tareas\n\nEste microservicio maneja:\n* **Gestión de tareas** por usuario\n* **Filtrado por estado** (PENDIENTE, EN_PROGRESO, COMPLETADA, CANCELADA)\n* **Estadísticas** de tareas\n\n### Características principales:\n- Crear, leer, actualizar y eliminar tareas\n- Listar tareas por estado\n- Tareas recientes ordenadas por fecha\n- Contador de tareas por estado\n- Seguridad con JWT (mismo token que ms-usuarios)\n\n### Autenticación:\n1. Obtén un token JWT del microservicio `ms-usuarios` en `/api/auth/login`\n2. Copia el token recibido\n3. Haz clic en el botón **Authorize** y pega: `Bearer {tu-token}`\n",
+    "contact": {
+      "name": "Soporte Técnico",
+      "url": "https://github.com/tu-repo",
+      "email": "soporte@example.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8082",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "Bearer Authentication": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tareas",
+      "description": "API para la gestión de tareas del usuario autenticado"
+    }
+  ],
+  "paths": {
+    "/api/tareas/{id}": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Obtener tarea por ID",
+        "description": "Retorna una tarea específica del usuario autenticado",
+        "operationId": "obtenerTarea",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarea",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Tarea no encontrada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Tarea encontrada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No tienes permiso para ver esta tarea",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Actualizar tarea",
+        "description": "Actualiza una tarea existente del usuario autenticado",
+        "operationId": "actualizarTarea",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarea",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TareaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "404": {
+            "description": "Tarea no encontrada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Tarea actualizada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No tienes permiso para modificar esta tarea",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Eliminar tarea",
+        "description": "Elimina una tarea específica del usuario autenticado",
+        "operationId": "eliminarTarea",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarea",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Tarea no encontrada"
+          },
+          "204": {
+            "description": "Tarea eliminada exitosamente"
+          },
+          "403": {
+            "description": "No tienes permiso para eliminar esta tarea"
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/tareas": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Listar todas mis tareas",
+        "description": "Retorna todas las tareas del usuario autenticado",
+        "operationId": "listarMisTareas",
+        "responses": {
+          "200": {
+            "description": "Lista obtenida exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Crear una nueva tarea",
+        "description": "Crea una nueva tarea asociada al usuario autenticado",
+        "operationId": "crearTarea",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TareaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Tarea creada exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/tareas/recientes": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Listar tareas recientes",
+        "description": "Retorna las tareas ordenadas por fecha de creación (más recientes primero)",
+        "operationId": "listarTareasRecientes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/tareas/estado/{estado}": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Listar tareas por estado",
+        "description": "Filtra las tareas del usuario por su estado",
+        "operationId": "listarTareasPorEstado",
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "path",
+            "description": "Estado de la tarea",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDIENTE",
+                "EN_PROGRESO",
+                "COMPLETADA",
+                "CANCELADA"
+              ]
+            },
+            "example": "PENDIENTE"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Lista filtrada obtenida",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/tareas/contar/{estado}": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Contar tareas por estado",
+        "description": "Retorna la cantidad de tareas del usuario con un estado específico",
+        "operationId": "contarTareasPorEstado",
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "path",
+            "description": "Estado a contar",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "COMPLETADA"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/tareas/eliminar-todas": {
+      "delete": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Eliminar todas mis tareas",
+        "description": "Elimina todas las tareas del usuario autenticado",
+        "operationId": "eliminarTodasMisTareas",
+        "responses": {
+          "200": {
+            "description": "Tareas eliminadas exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TareaRequest": {
+        "required": [
+          "estado",
+          "titulo"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "maxLength": 100,
+            "minLength": 3,
+            "type": "string",
+            "description": "Título de la tarea",
+            "example": "Completar informe"
+          },
+          "descripcion": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "description": "Descripción de la tarea",
+            "example": "Completar el informe mensual"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado de la tarea",
+            "example": "PENDIENTE",
+            "enum": [
+              "PENDIENTE",
+              "EN_PROGRESO",
+              "COMPLETADA",
+              "CANCELADA"
+            ]
+          }
+        },
+        "description": "DTO para crear o actualizar una tarea"
+      },
+      "Tarea": {
+        "required": [
+          "titulo",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID único de la tarea",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "titulo": {
+            "type": "string",
+            "description": "Título de la tarea",
+            "example": "Completar informe"
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripción detallada de la tarea",
+            "example": "Completar el informe mensual para el equipo"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado actual de la tarea",
+            "example": "PENDIENTE",
+            "enum": [
+              "PENDIENTE",
+              "EN_PROGRESO",
+              "COMPLETADA",
+              "CANCELADA"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre del usuario propietario de la tarea",
+            "example": "juan.perez"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "description": "Fecha de creación de la tarea",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "fechaActualizacion": {
+            "type": "string",
+            "description": "Fecha de última actualización",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "description": "Entidad que representa una tarea en el sistema"
+      }
+    },
+    "securitySchemes": {
+      "Bearer Authentication": {
+        "type": "http",
+        "description": "Ingresa tu token JWT en el siguiente formato:\n\n**Bearer {tu-token-jwt}**\n\nEjemplo: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`\n\n### Cómo obtener un token:\n1. Ve al microservicio `ms-usuarios` en `POST /api/auth/login`\n2. Usa credenciales válidas\n3. Copia el token de la respuesta\n",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

@@ -1,0 +1,1226 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "API Gateway - Sistema de Gestión de Tareas",
+    "version": "1.0.0",
+    "description": "API Gateway unificado para los microservicios del sistema"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "API Gateway"
+    }
+  ],
+  "paths": {
+    "/api/api/auth/registro": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Registrar nuevo usuario",
+        "description": "Crea una nueva cuenta de usuario",
+        "operationId": "registro",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "409": {
+            "description": "Usuario ya existe",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Usuario creado exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/api/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Iniciar sesión",
+        "description": "Autentica un usuario y retorna un token JWT",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "Credenciales inválidas",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Login exitoso",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/api/usuarios": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Listar todos los usuarios",
+        "description": "Retorna lista completa de usuarios. Requiere rol de ADMINISTRADOR",
+        "operationId": "listarUsuarios",
+        "responses": {
+          "200": {
+            "description": "Lista obtenida exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Usuario"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Prohibido - No tiene permisos de administrador",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Usuario"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/usuarios/perfil": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Obtener perfil del usuario autenticado",
+        "description": "Retorna la información completa del usuario actualmente autenticado",
+        "operationId": "getPerfil",
+        "responses": {
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuario no encontrado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Perfil obtenido exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/tareas/{id}": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Obtener tarea por ID",
+        "description": "Retorna una tarea específica del usuario autenticado",
+        "operationId": "obtenerTarea",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarea",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Tarea no encontrada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Tarea encontrada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No tienes permiso para ver esta tarea",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Actualizar tarea",
+        "description": "Actualiza una tarea existente del usuario autenticado",
+        "operationId": "actualizarTarea",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarea",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TareaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "404": {
+            "description": "Tarea no encontrada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Tarea actualizada",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No tienes permiso para modificar esta tarea",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Eliminar tarea",
+        "description": "Elimina una tarea específica del usuario autenticado",
+        "operationId": "eliminarTarea",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID de la tarea",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Tarea no encontrada"
+          },
+          "204": {
+            "description": "Tarea eliminada exitosamente"
+          },
+          "403": {
+            "description": "No tienes permiso para eliminar esta tarea"
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/tareas": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Listar todas mis tareas",
+        "description": "Retorna todas las tareas del usuario autenticado",
+        "operationId": "listarMisTareas",
+        "responses": {
+          "200": {
+            "description": "Lista obtenida exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Crear una nueva tarea",
+        "description": "Crea una nueva tarea asociada al usuario autenticado",
+        "operationId": "crearTarea",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TareaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Tarea creada exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tarea"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/tareas/recientes": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Listar tareas recientes",
+        "description": "Retorna las tareas ordenadas por fecha de creación (más recientes primero)",
+        "operationId": "listarTareasRecientes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/tareas/estado/{estado}": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Listar tareas por estado",
+        "description": "Filtra las tareas del usuario por su estado",
+        "operationId": "listarTareasPorEstado",
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "path",
+            "description": "Estado de la tarea",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDIENTE",
+                "EN_PROGRESO",
+                "COMPLETADA",
+                "CANCELADA"
+              ]
+            },
+            "example": "PENDIENTE"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Lista filtrada obtenida",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tarea"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/tareas/contar/{estado}": {
+      "get": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Contar tareas por estado",
+        "description": "Retorna la cantidad de tareas del usuario con un estado específico",
+        "operationId": "contarTareasPorEstado",
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "path",
+            "description": "Estado a contar",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "COMPLETADA"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/tareas/eliminar-todas": {
+      "delete": {
+        "tags": [
+          "Tareas"
+        ],
+        "summary": "Eliminar todas mis tareas",
+        "description": "Elimina todas las tareas del usuario autenticado",
+        "operationId": "eliminarTodasMisTareas",
+        "responses": {
+          "200": {
+            "description": "Tareas eliminadas exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/estadisticas/actualizar": {
+      "post": {
+        "tags": [
+          "Estadísticas"
+        ],
+        "summary": "Actualizar estadísticas manualmente",
+        "description": "Actualiza las estadísticas del usuario con valores proporcionados",
+        "operationId": "actualizarEstadisticas",
+        "parameters": [
+          {
+            "name": "total",
+            "in": "query",
+            "description": "Total de tareas",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 25
+          },
+          {
+            "name": "completadas",
+            "in": "query",
+            "description": "Tareas completadas",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 15
+          },
+          {
+            "name": "pendientes",
+            "in": "query",
+            "description": "Tareas pendientes",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 5
+          },
+          {
+            "name": "progreso",
+            "in": "query",
+            "description": "Tareas en progreso",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "example": 5
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estadísticas actualizadas exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estadisticas"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estadisticas"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estadisticas"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/estadisticas": {
+      "get": {
+        "tags": [
+          "Estadísticas"
+        ],
+        "summary": "Obtener mis estadísticas",
+        "description": "Retorna las estadísticas de tareas del usuario autenticado",
+        "operationId": "obtenerMisEstadisticas",
+        "responses": {
+          "404": {
+            "description": "No hay estadísticas para el usuario",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estadisticas"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Estadísticas obtenidas exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estadisticas"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/Estadisticas"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    },
+    "/api/api/estadisticas/mis-tareas": {
+      "get": {
+        "tags": [
+          "Estadísticas"
+        ],
+        "summary": "Obtener mis tareas desde ms-tareas",
+        "description": "Consulta el microservicio de tareas para obtener todas las tareas del usuario",
+        "operationId": "obtenerMisTareas",
+        "responses": {
+          "200": {
+            "description": "Tareas obtenidas exitosamente",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TareaDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TareaDTO"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error al consultar ms-tareas",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TareaDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer Authentication": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "RegistroRequest": {
+        "required": [
+          "apellido",
+          "email",
+          "nombre",
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "maxLength": 50,
+            "minLength": 3,
+            "type": "string",
+            "description": "Nombre de usuario único",
+            "example": "juan.perez"
+          },
+          "email": {
+            "type": "string",
+            "description": "Correo electrónico del usuario",
+            "example": "juan@example.com"
+          },
+          "password": {
+            "maxLength": 2147483647,
+            "minLength": 6,
+            "type": "string",
+            "description": "Contraseña del usuario",
+            "example": "123456"
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Nombre del usuario",
+            "example": "Juan"
+          },
+          "apellido": {
+            "type": "string",
+            "description": "Apellido del usuario",
+            "example": "Pérez"
+          }
+        },
+        "description": "Datos para registrar un nuevo usuario"
+      },
+      "LoginRequest": {
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "maxLength": 50,
+            "minLength": 3,
+            "type": "string",
+            "description": "Nombre de usuario",
+            "example": "juan.perez"
+          },
+          "password": {
+            "maxLength": 2147483647,
+            "minLength": 6,
+            "type": "string",
+            "description": "Contraseña del usuario",
+            "example": "123456"
+          }
+        },
+        "description": "Credenciales de autenticación para el login"
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token JWT para autenticación",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre de usuario autenticado",
+            "example": "juan.perez"
+          },
+          "roles": {
+            "type": "array",
+            "description": "Roles del usuario en el sistema",
+            "example": [
+              "USER",
+              "ADMIN"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Roles del usuario en el sistema",
+              "example": "[\"USER\",\"ADMIN\"]"
+            }
+          }
+        },
+        "description": "Respuesta del login con el token JWT"
+      },
+      "GrantedAuthority": {
+        "type": "object",
+        "properties": {
+          "authority": {
+            "type": "string"
+          }
+        }
+      },
+      "Usuario": {
+        "required": [
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID único del usuario",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre de usuario único",
+            "example": "juan.perez"
+          },
+          "password": {
+            "type": "string",
+            "description": "Contraseña del usuario (encriptada)",
+            "writeOnly": true,
+            "example": "$2a$10$..."
+          },
+          "email": {
+            "type": "string",
+            "description": "Correo electrónico del usuario",
+            "example": "juan.perez@example.com"
+          },
+          "roles": {
+            "type": "array",
+            "description": "Roles del usuario en el sistema",
+            "example": [
+              "USER",
+              "ADMIN"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Roles del usuario en el sistema",
+              "example": "[\"USER\",\"ADMIN\"]"
+            }
+          },
+          "nombre": {
+            "type": "string",
+            "description": "Nombre del usuario",
+            "example": "Juan"
+          },
+          "apellido": {
+            "type": "string",
+            "description": "Apellido del usuario",
+            "example": "Pérez"
+          },
+          "activo": {
+            "type": "boolean",
+            "description": "Indica si la cuenta está activa",
+            "example": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "authorities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GrantedAuthority"
+            }
+          },
+          "accountNonLocked": {
+            "type": "boolean"
+          },
+          "accountNonExpired": {
+            "type": "boolean"
+          },
+          "credentialsNonExpired": {
+            "type": "boolean"
+          }
+        },
+        "description": "Entidad que representa un usuario del sistema"
+      },
+      "TareaRequest": {
+        "required": [
+          "estado",
+          "titulo"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "maxLength": 100,
+            "minLength": 3,
+            "type": "string",
+            "description": "Título de la tarea",
+            "example": "Completar informe"
+          },
+          "descripcion": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "description": "Descripción de la tarea",
+            "example": "Completar el informe mensual"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado de la tarea",
+            "example": "PENDIENTE",
+            "enum": [
+              "PENDIENTE",
+              "EN_PROGRESO",
+              "COMPLETADA",
+              "CANCELADA"
+            ]
+          }
+        },
+        "description": "DTO para crear o actualizar una tarea"
+      },
+      "Tarea": {
+        "required": [
+          "titulo",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID único de la tarea",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "titulo": {
+            "type": "string",
+            "description": "Título de la tarea",
+            "example": "Completar informe"
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripción detallada de la tarea",
+            "example": "Completar el informe mensual para el equipo"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado actual de la tarea",
+            "example": "PENDIENTE",
+            "enum": [
+              "PENDIENTE",
+              "EN_PROGRESO",
+              "COMPLETADA",
+              "CANCELADA"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre del usuario propietario de la tarea",
+            "example": "juan.perez"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "description": "Fecha de creación de la tarea",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "fechaActualizacion": {
+            "type": "string",
+            "description": "Fecha de última actualización",
+            "format": "date-time",
+            "readOnly": true
+          }
+        },
+        "description": "Entidad que representa una tarea en el sistema"
+      },
+      "Estadisticas": {
+        "required": [
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID único de la estadística",
+            "format": "int64",
+            "readOnly": true,
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre del usuario",
+            "example": "juan.perez"
+          },
+          "totalTareas": {
+            "type": "integer",
+            "description": "Total de tareas del usuario",
+            "format": "int32",
+            "example": 25,
+            "default": 0
+          },
+          "tareasCompletadas": {
+            "type": "integer",
+            "description": "Tareas completadas",
+            "format": "int32",
+            "example": 15,
+            "default": 0
+          },
+          "tareasPendientes": {
+            "type": "integer",
+            "description": "Tareas pendientes",
+            "format": "int32",
+            "example": 5,
+            "default": 0
+          },
+          "tareasProgreso": {
+            "type": "integer",
+            "description": "Tareas en progreso",
+            "format": "int32",
+            "example": 5,
+            "default": 0
+          },
+          "fechaActualizacion": {
+            "type": "string",
+            "description": "Fecha de última actualización de estadísticas",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "porcentajeCompletado": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "description": "Entidad que almacena estadísticas de tareas por usuario"
+      },
+      "TareaDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID de la tarea",
+            "format": "int64",
+            "example": 1
+          },
+          "titulo": {
+            "type": "string",
+            "description": "Título de la tarea",
+            "example": "Completar informe"
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripción de la tarea",
+            "example": "Completar el informe mensual"
+          },
+          "estado": {
+            "type": "string",
+            "description": "Estado de la tarea",
+            "example": "COMPLETADA",
+            "enum": [
+              "PENDIENTE",
+              "EN_PROGRESO",
+              "COMPLETADA",
+              "CANCELADA"
+            ]
+          },
+          "username": {
+            "type": "string",
+            "description": "Nombre del usuario propietario",
+            "example": "juan.perez"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "description": "Fecha de creación de la tarea",
+            "example": "2024-01-15T10:30:00"
+          }
+        },
+        "description": "DTO para transferir información de tareas desde ms-tareas"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

@@ -1,0 +1,265 @@
+openapi: 3.0.1
+info:
+  title: API de Microservicio de Estadísticas
+  description: |
+    ## Microservicio de Estadísticas para Sistema de Gestión de Tareas
+
+    Este microservicio maneja:
+    * **Estadísticas de tareas** por usuario
+    * **Métricas** de productividad
+    * **Consultas** a otros microservicios
+
+    ### Características principales:
+    - Obtener estadísticas del usuario autenticado
+    - Actualizar estadísticas manualmente
+    - Consultar tareas desde ms-tareas
+    - Seguridad con JWT (mismo token que ms-usuarios)
+
+    ### Autenticación:
+    1. Obtén un token JWT del microservicio `ms-usuarios` en `/api/auth/login`
+    2. Copia el token recibido
+    3. Haz clic en el botón **Authorize** y pega: `Bearer {tu-token}`
+
+    ### Dependencias:
+    - Este microservicio se comunica con `ms-tareas` (puerto 8082)
+  contact:
+    name: Soporte Técnico
+    url: https://github.com/tu-repo
+    email: soporte@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+servers:
+- url: http://localhost:8083
+  description: Generated server url
+security:
+- Bearer Authentication: []
+tags:
+- name: Estadísticas
+  description: API para consultar y actualizar estadísticas de tareas
+paths:
+  /api/estadisticas/actualizar:
+    post:
+      tags:
+      - Estadísticas
+      summary: Actualizar estadísticas manualmente
+      description: Actualiza las estadísticas del usuario con valores proporcionados
+      operationId: actualizarEstadisticas
+      parameters:
+      - name: total
+        in: query
+        description: Total de tareas
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 25
+      - name: completadas
+        in: query
+        description: Tareas completadas
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 15
+      - name: pendientes
+        in: query
+        description: Tareas pendientes
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 5
+      - name: progreso
+        in: query
+        description: Tareas en progreso
+        required: true
+        schema:
+          type: integer
+          format: int32
+        example: 5
+      responses:
+        "200":
+          description: Estadísticas actualizadas exitosamente
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Estadisticas'
+        "401":
+          description: No autorizado
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Estadisticas'
+        "400":
+          description: Datos inválidos
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Estadisticas'
+      security:
+      - Bearer Authentication: []
+  /api/estadisticas:
+    get:
+      tags:
+      - Estadísticas
+      summary: Obtener mis estadísticas
+      description: Retorna las estadísticas de tareas del usuario autenticado
+      operationId: obtenerMisEstadisticas
+      responses:
+        "404":
+          description: No hay estadísticas para el usuario
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Estadisticas'
+        "200":
+          description: Estadísticas obtenidas exitosamente
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Estadisticas'
+        "401":
+          description: No autorizado
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Estadisticas'
+      security:
+      - Bearer Authentication: []
+  /api/estadisticas/mis-tareas:
+    get:
+      tags:
+      - Estadísticas
+      summary: Obtener mis tareas desde ms-tareas
+      description: Consulta el microservicio de tareas para obtener todas las tareas
+        del usuario
+      operationId: obtenerMisTareas
+      responses:
+        "200":
+          description: Tareas obtenidas exitosamente
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TareaDTO'
+        "401":
+          description: No autorizado
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TareaDTO'
+        "500":
+          description: Error al consultar ms-tareas
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TareaDTO'
+      security:
+      - Bearer Authentication: []
+components:
+  schemas:
+    Estadisticas:
+      required:
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único de la estadística
+          format: int64
+          readOnly: true
+          example: 1
+        username:
+          type: string
+          description: Nombre del usuario
+          example: juan.perez
+        totalTareas:
+          type: integer
+          description: Total de tareas del usuario
+          format: int32
+          example: 25
+          default: 0
+        tareasCompletadas:
+          type: integer
+          description: Tareas completadas
+          format: int32
+          example: 15
+          default: 0
+        tareasPendientes:
+          type: integer
+          description: Tareas pendientes
+          format: int32
+          example: 5
+          default: 0
+        tareasProgreso:
+          type: integer
+          description: Tareas en progreso
+          format: int32
+          example: 5
+          default: 0
+        fechaActualizacion:
+          type: string
+          description: Fecha de última actualización de estadísticas
+          format: date-time
+          readOnly: true
+        porcentajeCompletado:
+          type: number
+          format: double
+      description: Entidad que almacena estadísticas de tareas por usuario
+    TareaDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID de la tarea
+          format: int64
+          example: 1
+        titulo:
+          type: string
+          description: Título de la tarea
+          example: Completar informe
+        descripcion:
+          type: string
+          description: Descripción de la tarea
+          example: Completar el informe mensual
+        estado:
+          type: string
+          description: Estado de la tarea
+          example: COMPLETADA
+          enum:
+          - PENDIENTE
+          - EN_PROGRESO
+          - COMPLETADA
+          - CANCELADA
+        username:
+          type: string
+          description: Nombre del usuario propietario
+          example: juan.perez
+        fechaCreacion:
+          type: string
+          description: Fecha de creación de la tarea
+          example: 2024-01-15T10:30:00
+      description: DTO para transferir información de tareas desde ms-tareas
+  securitySchemes:
+    Bearer Authentication:
+      type: http
+      description: |
+        Ingresa tu token JWT en el siguiente formato:
+
+        **Bearer {tu-token-jwt}**
+
+        Ejemplo: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+        ### Cómo obtener un token:
+        1. Ve al microservicio `ms-usuarios` en `POST /api/auth/login`
+        2. Usa credenciales válidas
+        3. Copia el token de la respuesta
+      scheme: bearer
+      bearerFormat: JWT

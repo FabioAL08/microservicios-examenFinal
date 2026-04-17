@@ -1,0 +1,13 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: movimiento-service
+  datasource:
+    url: jdbc:h2:mem:movimientodb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update

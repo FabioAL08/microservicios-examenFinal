@@ -1,0 +1,315 @@
+openapi: 3.0.1
+info:
+  title: API de Microservicio de Usuarios
+  description: |
+    ## Microservicio de Usuarios para Sistema de Gestión de Tareas
+
+    Este microservicio maneja:
+    * **Autenticación y autorización** mediante JWT
+    * **Gestión de perfiles** de usuarios
+    * **Roles** (USER, ADMIN)
+
+    ### Características principales:
+    - Registro y login de usuarios
+    - Perfil personal
+    - Listado de usuarios (solo ADMIN)
+    - Seguridad con JWT
+
+    ### Autenticación:
+    1. Usa el endpoint `/api/auth/login` para obtener un token JWT
+    2. Copia el token recibido
+    3. Haz clic en el botón **Authorize** y pega: `Bearer {tu-token}`
+  contact:
+    name: Soporte Técnico
+    url: https://github.com/tu-repo
+    email: soporte@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+servers:
+- url: http://localhost:8081
+  description: Generated server url
+security:
+- Bearer Authentication: []
+tags:
+- name: Usuarios
+  description: API para gestión de usuarios del sistema
+- name: Autenticación
+  description: Endpoints para autenticación y registro de usuarios
+paths:
+  /api/auth/registro:
+    post:
+      tags:
+      - Autenticación
+      summary: Registrar nuevo usuario
+      description: Crea una nueva cuenta de usuario
+      operationId: registro
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+        required: true
+      responses:
+        "409":
+          description: Usuario ya existe
+          content:
+            '*/*':
+              schema:
+                type: object
+        "201":
+          description: Usuario creado exitosamente
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Datos inválidos
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/auth/login:
+    post:
+      tags:
+      - Autenticación
+      summary: Iniciar sesión
+      description: Autentica un usuario y retorna un token JWT
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        "200":
+          description: Login exitoso
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        "401":
+          description: Credenciales inválidas
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/usuarios:
+    get:
+      tags:
+      - Usuarios
+      summary: Listar todos los usuarios
+      description: Retorna lista completa de usuarios. Requiere rol de ADMINISTRADOR
+      operationId: listarUsuarios
+      responses:
+        "200":
+          description: Lista obtenida exitosamente
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        "401":
+          description: No autorizado
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+        "403":
+          description: Prohibido - No tiene permisos de administrador
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Usuario'
+      security:
+      - Bearer Authentication: []
+  /api/usuarios/perfil:
+    get:
+      tags:
+      - Usuarios
+      summary: Obtener perfil del usuario autenticado
+      description: Retorna la información completa del usuario actualmente autenticado
+      operationId: getPerfil
+      responses:
+        "200":
+          description: Perfil obtenido exitosamente
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        "401":
+          description: No autorizado
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        "404":
+          description: Usuario no encontrado
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Usuario'
+      security:
+      - Bearer Authentication: []
+components:
+  schemas:
+    RegistroRequest:
+      required:
+      - apellido
+      - email
+      - nombre
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          maxLength: 50
+          minLength: 3
+          type: string
+          description: Nombre de usuario único
+          example: juan.perez
+        email:
+          type: string
+          description: Correo electrónico del usuario
+          example: juan@example.com
+        password:
+          maxLength: 2147483647
+          minLength: 6
+          type: string
+          description: Contraseña del usuario
+          example: "123456"
+        nombre:
+          type: string
+          description: Nombre del usuario
+          example: Juan
+        apellido:
+          type: string
+          description: Apellido del usuario
+          example: Pérez
+      description: Datos para registrar un nuevo usuario
+    LoginRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          maxLength: 50
+          minLength: 3
+          type: string
+          description: Nombre de usuario
+          example: juan.perez
+        password:
+          maxLength: 2147483647
+          minLength: 6
+          type: string
+          description: Contraseña del usuario
+          example: "123456"
+      description: Credenciales de autenticación para el login
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token JWT para autenticación
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        username:
+          type: string
+          description: Nombre de usuario autenticado
+          example: juan.perez
+        roles:
+          type: array
+          description: Roles del usuario en el sistema
+          example:
+          - USER
+          - ADMIN
+          items:
+            type: string
+            description: Roles del usuario en el sistema
+            example: "[\"USER\",\"ADMIN\"]"
+      description: Respuesta del login con el token JWT
+    GrantedAuthority:
+      type: object
+      properties:
+        authority:
+          type: string
+    Usuario:
+      required:
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único del usuario
+          format: int64
+          readOnly: true
+          example: 1
+        username:
+          type: string
+          description: Nombre de usuario único
+          example: juan.perez
+        password:
+          type: string
+          description: Contraseña del usuario (encriptada)
+          writeOnly: true
+          example: $2a$10$...
+        email:
+          type: string
+          description: Correo electrónico del usuario
+          example: juan.perez@example.com
+        roles:
+          type: array
+          description: Roles del usuario en el sistema
+          example:
+          - USER
+          - ADMIN
+          items:
+            type: string
+            description: Roles del usuario en el sistema
+            example: "[\"USER\",\"ADMIN\"]"
+        nombre:
+          type: string
+          description: Nombre del usuario
+          example: Juan
+        apellido:
+          type: string
+          description: Apellido del usuario
+          example: Pérez
+        activo:
+          type: boolean
+          description: Indica si la cuenta está activa
+          example: true
+        enabled:
+          type: boolean
+        authorities:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantedAuthority'
+        accountNonExpired:
+          type: boolean
+        credentialsNonExpired:
+          type: boolean
+        accountNonLocked:
+          type: boolean
+      description: Entidad que representa un usuario del sistema
+  securitySchemes:
+    Bearer Authentication:
+      type: http
+      description: |
+        Ingresa tu token JWT en el siguiente formato:
+
+        **Bearer {tu-token-jwt}**
+
+        Ejemplo: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+        ### Cómo obtener un token:
+        1. Ve a `POST /api/auth/login`
+        2. Usa credenciales válidas
+        3. Copia el token de la respuesta
+      scheme: bearer
+      bearerFormat: JWT
